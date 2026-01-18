@@ -32,9 +32,11 @@ if (!global.mongoose) {
 }
 
 /**
- * Establishes a connection to MongoDB using Mongoose
- * Implements connection caching to prevent multiple connections in serverless environments
- * @returns Promise resolving to the Mongoose instance
+ * Connects to MongoDB using Mongoose and caches the connection.
+ *
+ * If a connection attempt fails, the in-flight cached promise is cleared so subsequent calls may retry.
+ *
+ * @returns The connected Mongoose module.
  */
 async function connectDB(): Promise<typeof mongoose> {
   // Return existing connection if available
