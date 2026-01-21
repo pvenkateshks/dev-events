@@ -108,7 +108,7 @@ const eventSchema = new Schema<IEvent>(
 );
 
 // Pre-save hook for slug generation and data normalization
-eventSchema.pre('save', function (next) {
+eventSchema.pre('save', async function (this: IEvent) {
   // Generate slug only if title is new or modified
   if (this.isModified('title')) {
     this.slug = this.title
@@ -124,7 +124,7 @@ eventSchema.pre('save', function (next) {
   if (this.isModified('date')) {
     const parsedDate = new Date(this.date);
     if (isNaN(parsedDate.getTime())) {
-      return next(new Error('Invalid date format'));
+      throw new Error('Invalid date format');
     }
     // Store in ISO date format (YYYY-MM-DD)
     this.date = parsedDate.toISOString().split('T')[0];
@@ -134,15 +134,10 @@ eventSchema.pre('save', function (next) {
   if (this.isModified('time')) {
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
     if (!timeRegex.test(this.time)) {
-      return next(new Error('Time must be in HH:MM format'));
+      throw new Error('Time must be in HH:MM format');
     }
   }
-
-  next();
 });
-
-// Create unique index on slug for efficient lookups
-eventSchema.index({ slug: 1 });
 
 // Export the Event model, reusing existing model if already compiled
 const Event: Model<IEvent> =
